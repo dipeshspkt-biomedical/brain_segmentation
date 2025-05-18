@@ -24,7 +24,7 @@ Standard_Labels=np.array([ 0.,   2.,   3.,   4.,   5.,   7.,   8.,  10.,  11.,  
         42.,  43.,  44.,  46.,  47.,  49.,  50.,  51.,  52.,  53.,  54.,
         58.,  60.,  62.,  63.,  77.,  80.,  85., 251., 252., 253., 254.,
        255.])
-lut_path='/content/drive/MyDrive/FreeSurferColorLUT.txt'
+lut_path='/kaggle/input/freesurfer-color-map'
 
 class Features(Files):
   def __init__(self):
