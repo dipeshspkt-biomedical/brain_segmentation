@@ -102,11 +102,11 @@ def display_image_label(Image_Directory,Label_Directory,patient_index,slice_inde
   img=Features().load_file(Features().extract_image_path(Image_Directory)[patient_index]).get_fdata()
   label=Features().load_file(Features().extract_label_path(Label_Directory)[patient_index]).get_fdata()
   label=Features().transform_label_values(label)
-  return Features().visualize_image_label(Features().extract_image_path(Image_Directory)[patient_index].split('/')[6],img[slice_index,:,:],label[slice_index,:,:])
+  return Features().visualize_image_label(Features().extract_image_path(Image_Directory)[patient_index].split('/')[4],img[slice_index,:,:],label[slice_index,:,:])
 
 
 def display_image_label_overlay(Image_Directory,Label_Directory,patient_index,slice_index):
   img=Features().load_file(Features().extract_image_path(Image_Directory)[patient_index]).get_fdata()
   label=Features().load_file(Features().extract_label_path(Label_Directory)[patient_index]).get_fdata()
   label=Features().transform_label_values(label)
-  return Features().visualize_image_label_overlay(Features().extract_image_path(Image_Directory)[patient_index].split('/')[6],img[slice_index,:,:],label[slice_index,:,:])
+  return Features().visualize_image_label_overlay(Features().extract_image_path(Image_Directory)[patient_index].split('/')[4],img[slice_index,:,:],label[slice_index,:,:])
