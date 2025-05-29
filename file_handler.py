@@ -26,16 +26,16 @@ class Files(object):
     return content
 
   def extract_image_label_path(self,Main_Directory):
-    Image_Files=sorted(glob(f'{Main_Directory}/**/*.nii.gz*',recursive=True))
+    Image_Files=sorted(glob(f'{Main_Directory}/**/*.nii*',recursive=True))
     Label_Files=sorted(glob(f'{Main_Directory}/**/aseg.mgz*',recursive=True))
     return Image_Files,Label_Files
 
   def extract_image_path(self,Image_Directory):
-    Image_Files=sorted(glob(f'{Image_Directory}/**/*.nii.gz*',recursive=True))
+    Image_Files=sorted(glob(f'{Image_Directory}/**/*.nii*',recursive=True))
     return Image_Files
 
   def extract_label_path(self,Label_Directory):
-    Label_Files=sorted(glob(f'{Label_Directory}/**/*.nii.gz*',recursive=True))
+    Label_Files=sorted(glob(f'{Label_Directory}/**/*.nii*',recursive=True))
     return Label_Files
 
   def save_as_nifti1(self,content,destination_file_path):
@@ -75,8 +75,8 @@ def Files_Processing(Main_Directory,Save_Image_Directory,Save_Label_Directory):
     for img,label in zip(Path_df.iloc[:,0],Path_df.iloc[:,1]):
       img_content=file_handler.load_file(img)
       label_content=file_handler.load_file(label)
-      img_filename=file_handler.construct_filepath(Save_Image_Directory,img.split('/')[7]+'_'+img.split('/')[8]+'.nii.gz')
-      label_filename=file_handler.construct_filepath(Save_Label_Directory,label.split('/')[7]+'.nii.gz')
+      img_filename=file_handler.construct_filepath(Save_Image_Directory,img.split('/')[7]+'_'+img.split('/')[8]+'.nii')
+      label_filename=file_handler.construct_filepath(Save_Label_Directory,label.split('/')[7]+'.nii')
       file_handler.save_as_nifti1(img_content,img_filename)
       file_handler.save_as_nifti1(label_content,label_filename)
     return None
