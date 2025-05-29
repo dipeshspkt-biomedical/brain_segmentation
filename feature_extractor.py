@@ -94,7 +94,7 @@ def resample_image(Image_Directory,Label_Directory,Resampled_Image_Directory):
   label_path=Features().extract_label_path(Label_Directory)
   for img,label in zip(img_path,label_path):
     resampled_img=Features().resample_image_to_label(img,label)
-    resampled_img_filename=Features().construct_filepath(Resampled_Image_Directory,'Resampled_'+img.split('/')[6][0:-7]+'.nii')
+    resampled_img_filename=Features().construct_filepath(Resampled_Image_Directory,'Resampled_'+img.split('/')[6][0:-7]+'.nii.gz')
     Features().save_as_nifti1(resampled_img,resampled_img_filename)
   return None
 
