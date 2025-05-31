@@ -32,7 +32,7 @@ class Features(Files):
     self.LUT_Path=lut_path
 
   def extract_image_label_features(self,image_path,label_path):
-    features={'Patient Index':image_path.split('/')[6],'Image Shape':self.load_file(image_path).get_fdata().shape,'Label Shape':self.load_file(label_path).get_fdata().shape,'Image Orientation':nib.aff2axcodes(self.load_file(image_path).affine),'Label Orientation':nib.aff2axcodes(self.load_file(label_path).affine),'Image Voxel Dimension':self.load_file(image_path).header.get_zooms(),'Label Voxel Dimension':self.load_file(label_path).header.get_zooms(),'Maximum Image Intensity':np.max(self.load_file(image_path).get_fdata()),'Minimum Image Intensity':np.min(self.load_file(image_path).get_fdata()),'Number of Labels':len(np.unique(self.load_file(label_path).get_fdata())),'Non-Standard Label Index':[items for items in np.unique(self.load_file(label_path).get_fdata()) if items not in Standard_Labels]}
+    features={'Patient Index':image_path.split('/')[-1],'Image Shape':self.load_file(image_path).get_fdata().shape,'Label Shape':self.load_file(label_path).get_fdata().shape,'Image Orientation':nib.aff2axcodes(self.load_file(image_path).affine),'Label Orientation':nib.aff2axcodes(self.load_file(label_path).affine),'Image Voxel Dimension':self.load_file(image_path).header.get_zooms(),'Label Voxel Dimension':self.load_file(label_path).header.get_zooms(),'Maximum Image Intensity':np.max(self.load_file(image_path).get_fdata()),'Minimum Image Intensity':np.min(self.load_file(image_path).get_fdata()),'Number of Labels':len(np.unique(self.load_file(label_path).get_fdata())),'Non-Standard Label Index':[items for items in np.unique(self.load_file(label_path).get_fdata()) if items not in Standard_Labels]}
     return features
 
   def create_cmap(self):
