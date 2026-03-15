@@ -24,7 +24,7 @@ class Train(object):
         DATA=data.MyData(self.img_dir,self.label_dir,self.config)
         MODEL=model.Model(self.config)
         checkpoint_callback = None
-        if self.mode in ["scratch", "fine tuning","peft"]:
+        if self.mode in ["scratch", "fine tuning","adapter","lora"]:
             checkpoint_callback = ModelCheckpoint(
                 monitor='Mean Validation Dice',
                 mode='max',
@@ -52,13 +52,10 @@ class Train(object):
             )
             if self.mode=="fine tuning":
                 print("Starting Full Fine Tuning")
-            elif self.mode=="peft":
-                print("Performing PEFT with adaptors")
+            elif self.mode=="adapter":
+                print("Performing PEFT with adapters")
+            elif self.mode=="lora":
+                print("Performing PEFT with LORA")
             else:
                 print('Training from Scratch')
             trainer.fit(model=MODEL, datamodule=DATA)
-
-        
-        
-        
-        
