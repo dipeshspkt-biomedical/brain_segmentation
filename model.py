@@ -45,6 +45,48 @@ class SwinBlockAdapterWrapper(nn.Module):
         x = self.adapter(x)
         return x
 
+class LoRALinear(nn.Module):
+    def __init__(self, linear_layer, r, alpha):
+        super().__init__()
+
+        self.linear = linear_layer
+        self.linear.weight.requires_grad = False
+
+        in_features = linear_layer.in_features
+        out_features = linear_layer.out_features
+
+        self.r = r
+        self.alpha = alpha
+        self.scaling = alpha / r
+
+        self.A = nn.Parameter(torch.zeros(r, in_features))
+        self.B = nn.Parameter(torch.zeros(out_features, r))
+
+        nn.init.kaiming_uniform_(self.A, a=math.sqrt(5))
+        nn.init.zeros_(self.B)
+
+    def forward(self, x):
+        original = self.linear(x)
+        lora = (x @ self.A.T @ self.B.T) * self.scaling
+        return original + lora
+
+
+class SwinBlockLoRAWrapper(nn.Module):
+    def __init__(self, block, r, alpha):
+        super().__init__()
+
+        self.block = block
+
+        # Replace qkv projection with LoRA
+        self.block.attn.qkv = LoRALinear(
+            self.block.attn.qkv,
+            r=r,
+            alpha=alpha
+        )
+
+    def forward(self, *args, **kwargs):
+        return self.block(*args, **kwargs)
+
 class Model(pl.LightningModule):
     def __init__(self,config):
         super().__init__()
@@ -53,6 +95,8 @@ class Model(pl.LightningModule):
         self.config=config
         self.mode=self.config.experiment.mode
         self.adapter_dim = config.experiment.get("adapter_dim", None)
+        self.lora_rank=config.experiment.get("lora_rank",None)
+        self.lora_alpha=config.experiment.get("lora_alpha",None)
         self.feature_size=self.config.model.feature_size
         self.in_channels=self.config.model.in_channels
         self.out_channels=self.config.model.out_channels
@@ -74,19 +118,26 @@ class Model(pl.LightningModule):
         self.best_val_dice = 0
         self.best_val_epoch = 0
         self.validation_step_outputs = []
-        if self.mode in ["fine tuning", "zero shot","peft"]:
+        if self.mode in ["fine tuning", "zero shot","adapter","lora"]:
             self._load_pretrained_from_wandb()
             if self.mode=="zero shot":
                 self._freeze_model()
-            if self.mode == "peft":
+            if self.mode == "adapter":
                 self._inject_adapters(adapter=self.adapter_dim)
-                self._freeze_backbone_except_adapters()
+                self._freeze_backbone()
+                self._print_trainable_params()
+            if self.mode == "lora":
+                self._inject_lora(r=self.lora_rank, alpha=self.lora_alpha)
+                self._freeze_backbone()
                 self._print_trainable_params()
 
     def configure_optimizers(self):
         if self.mode=="zero shot":
             return None
-        if self.mode=="peft":
+        if self.mode=="adapter":
+            trainable_params = filter(lambda p: p.requires_grad, self.model.parameters())
+            return torch.optim.AdamW(trainable_params, lr=self.learning_rate, weight_decay=self.weight_decay)
+        if self.mode == "lora":
             trainable_params = filter(lambda p: p.requires_grad, self.model.parameters())
             return torch.optim.AdamW(trainable_params, lr=self.learning_rate, weight_decay=self.weight_decay)
         return torch.optim.AdamW(self.model.parameters(), lr=self.learning_rate,weight_decay=self.weight_decay)
@@ -182,14 +233,38 @@ class Model(pl.LightningModule):
                     adapter_dim
                 )
         print("✅ Adapters injected into Swin Transformer blocks")
-        
-    def _freeze_backbone_except_adapters(self):
+
+    def _inject_lora(self, r, alpha):
+        swin = self.model.swinViT
+        stages = [
+            swin.layers1,
+            swin.layers2,
+            swin.layers3,
+            swin.layers4
+        ]
+        for stage in stages:
+            for layer in stage:
+                for i, block in enumerate(layer.blocks):
+                    layer.blocks[i] = SwinBlockLoRAWrapper(
+                    block,
+                    r=r,
+                    alpha=alpha
+                    )
+        print("✅ LoRA injected into Swin Transformer attention layers")
+
+    def _freeze_backbone(self):
         for name, param in self.model.named_parameters():
-            if "adapter" in name or "decoder" in name or "out" in name:
+            if (
+                "adapter" in name
+                or "A" in name
+                or "B" in name
+                or "decoder" in name
+                or "out" in name
+            ):
                 param.requires_grad = True
             else:
                 param.requires_grad = False
-        print("🔒 Backbone frozen, adapters trainable")
+        print("🔒 Backbone frozen, PEFT modules trainable")
 
     def _print_trainable_params(self):
         trainable = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
@@ -197,7 +272,3 @@ class Model(pl.LightningModule):
         print(f"Trainable params: {trainable}")
         print(f"Total params: {total}")
         print(f"Trainable ratio: {trainable/total:.4f}")
-
-
-
-      
