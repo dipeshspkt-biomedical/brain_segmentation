@@ -86,7 +86,7 @@ class MyData(pl.LightningDataModule):
         self.img_files=Files().extract_image_path(self.Save_Image_Directory)
         self.label_files=Files().extract_label_path(self.Save_Label_Directory)
         self.data_dict=[{'image':img,'label':label} for img,label in zip(self.img_files,self.label_files)]
-        if self.mode in ["scratch","fine tuning","peft"]:
+        if self.mode in ["scratch","fine tuning","adapter","lora"]:
             self.train_files, self.val_files = train_test_split(self.data_dict,train_size=self.train_size,test_size=self.test_size,random_state=self.random_state)
             self.train_dataset=CacheDataset(data=self.train_files,transform=self.train_transform,cache_rate=self.cache_rate)
             self.val_dataset=CacheDataset(data=self.val_files,transform=self.val_transform,cache_rate=self.cache_rate)
