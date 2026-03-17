@@ -1,0 +1,43 @@
+# ==========================
+# Experiment
+# ==========================
+experiment:
+  mode: "scratch"
+  segmentation_mode: "hippocampus"
+  pretrain_source: "None"
+ 
+# ==========================
+# Data
+# ==========================
+data:
+  data_source: "oasis"
+  batch_size: 1
+  train_size: 0.8
+  test_size: 0.2
+  random_state: 42
+  cache_rate: 1
+  num_workers: 3
+  spatial_size: [128, 128, 128]
+
+# ==========================
+# Model
+# ==========================
+model:
+  input_img_size: [128, 128, 128]
+  feature_size: 48
+  in_channels: 1
+  out_channels: 2
+  use_checkpoint: true
+  learning_rate: 0.001
+  weight_decay: 0.001
+ 
+# ==========================
+# Training and Logging
+# ==========================
+train:
+  max_epochs: 31
+ 
+wandb:
+  artifact_path: ""
+  project_name: "Brain_Segmentation"
+  run_name: "OASIS_Scratch"
