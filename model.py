@@ -123,7 +123,7 @@ class Model(pl.LightningModule):
             if self.mode=="zero shot":
                 self._freeze_model()
             if self.mode == "adapter":
-                self._inject_adapters(adapter=self.adapter_dim)
+                self._inject_adapters(adapter_dim=self.adapter_dim)
                 self._freeze_backbone()
                 self._print_trainable_params()
             if self.mode == "lora":
